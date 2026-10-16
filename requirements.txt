@@ -1,7 +1,7 @@
-pandas
-pyarrow
-duckdb
-google-cloud-bigquery
-db-dtypes
-scikit-learn
-requests
+pandas==3.0.6
+pyarrow==26.0.0
+duckdb==1.5.6
+google-cloud-bigquery==3.46.2
+db-dtypes==1.8.0
+scikit-learn==1.9.1
+requests==2.34.2
