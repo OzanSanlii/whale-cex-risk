@@ -1,0 +1,24 @@
+# Veri dosyaları (yalnızca klasör yapısı repoda tutulur)
+data/**
+!data/**/
+!data/**/.gitkeep
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Kimlik bilgileri ve ortam değişkenleri
+*.json
+!**/package.json
+.env
+
+# Deney kayıtları
+mlruns/
+
+# IDE / işletim sistemi
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
