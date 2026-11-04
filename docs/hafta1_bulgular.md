@@ -79,3 +79,19 @@ Kuralın bulduğu 5 rastgele aday (≥100 LINK) ve en büyük aday Arkham'da kon
 1 numaralı adreste para bir kullanıcıdan değil, Bullish'in kendi sıcak cüzdanından gelmiş (borsa içi hareket). Kaynak adres CEX listesinde olduğu için kullanıcı akışı hesabına doğru biçimde dahil edilmedi.
 
 **Sınırlamalar:** Örneklem küçük (6 adres) ve Arkham'ın etiketleri de kendi sezgisel yöntemlerine dayanıyor; kesin doğruluk değil, tutarlılık gösteriyor. Ayrıca bu test yalnızca kuralın bulduklarının doğruluğunu (precision) ölçüyor; kuralın kaçırdığı yatırma adresleri (recall) ölçülmedi.
+
+## Gün 5: Pozitif oran tahmini (kaba, bakiyesiz)
+
+Bakiyeler henüz yok (açılış bakiyesi sorgusu çalıştırılmadı), bu yüzden "bakiyenin ≥%20'si" koşulu hesaplanamadı. Bunun yerine her hafta borsaya (doğrudan veya yatırma adresi üzerinden) en az T LINK gönderen farklı adres sayısı ölçüldü. Kota kullanımı: 0 GB. Script: [src/positive_rate_estimate.py](../src/positive_rate_estimate.py)
+
+| Eşik (Mart 2023'te 1 LINK ≈ 7 $) | Tam haftalarda ortalama gönderen adres | 1.000 cüzdanlık evrende kaba oran |
+|---|---:|---:|
+| ≥10.000 LINK (~70 bin $) | 73 | ~%7,3 |
+| ≥50.000 LINK (~350 bin $) | 26 | ~%2,6 |
+| ≥100.000 LINK (~700 bin $) | 14 | ~%1,4 |
+
+Bu oranlar **üst sınırdır**: gönderenlerin hepsi en büyük 1.000 sahip arasında olmayabilir ve "bakiyenin ≥%20'si" koşulu sayıyı daha da düşürecektir. Yine de tüm eşiklerde 1. haftanın karar ölçütü olan %0,5'in belirgin biçimde üzerinde.
+
+**Tekrarlayan göndericiler.** Ay boyunca ≥50.000 LINK gönderen 74 farklı adres var (117 adres-hafta). Bunların 11'i 4 haftanın en az 3'ünde gönderim yapmış; büyük olasılıkla piyasa yapıcı veya OTC masaları. Bu, proje önerisindeki "geçen ay gönderdiyse bu hafta da gönderir" kural tabanlı baseline'ın güçlü olacağını doğruluyor. Model değerlendirmesinde bu grup ayrıca raporlanmalı.
+
+**Not.** 13 Mart haftasında toplam gönderici sayısı diğer haftaların ~5 katı (11.443). Büyük göndericilerde benzer bir sıçrama yok. Tarih, Mart 2023'teki bankacılık krizi ve USDC'nin geçici olarak dolar paritesini kaybetmesiyle örtüşüyor; ayrıntılı inceleme tam veriyle yapılabilir.
