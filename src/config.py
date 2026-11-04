@@ -9,7 +9,6 @@ PROCESSED_DIR = ROOT / "data" / "processed"
 
 TOKENS = {
     "LINK": "0x514910771af9ca656af840dff83e8264ecf986ca",
-    "UNI": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
 }
 STABLECOINS = {
     "USDT": "0xdac17f958d2ee523a2206206994597c13d831ec7",

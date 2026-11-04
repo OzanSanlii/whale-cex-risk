@@ -6,10 +6,12 @@ Tüm değerler dry-run ile ölçülmüştür (sorgu çalıştırılmadan, kota h
 
 | Sorgu | Kapsam | Taranacak veri |
 |---|---|---:|
-| [01_opening_balances.sql](../sql/01_opening_balances.sql) | LINK + UNI, başlangıçtan 31.12.2022'ye, adres bazında bakiye | 202,5 GB |
-| [02_token_transfers.sql](../sql/02_token_transfers.sql) | LINK + UNI, Ekim 2022 – Aralık 2024, satır bazında | 180,8 GB |
+| [01_opening_balances.sql](../sql/01_opening_balances.sql) | LINK, başlangıçtan 31.12.2022'ye, adres bazında bakiye | 202,5 GB |
+| [02_token_transfers.sql](../sql/02_token_transfers.sql) | LINK, Ekim 2022 – Aralık 2024, satır bazında | 180,8 GB |
 | [03_stablecoin_inflows.sql](../sql/03_stablecoin_inflows.sql) | USDT + USDC, Aralık 2022 – Aralık 2024, balina cüzdanlarına gelen | 113,3 GB |
 | **Toplam** | | **496,7 GB** |
+
+Not: Kapsam LINK ile sınırlandırıldı (UNI çıkarıldı). Token filtresi maliyeti etkilemediği için değerler değişmedi.
 
 Aylık ücretsiz kota 1 TB'tır ve her ayın 1'inde sıfırlanır. Üç sorgu tek ayın kotasına sığar; yaklaşık 500 GB'lık pay, Gün 4 örneklemi (~7 GB) ve olası bir tekrar için yeterlidir.
 
