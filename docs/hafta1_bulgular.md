@@ -95,3 +95,15 @@ Bu oranlar **üst sınırdır**: gönderenlerin hepsi en büyük 1.000 sahip ara
 **Tekrarlayan göndericiler.** Ay boyunca ≥50.000 LINK gönderen 74 farklı adres var (117 adres-hafta). Bunların 11'i 4 haftanın en az 3'ünde gönderim yapmış; büyük olasılıkla piyasa yapıcı veya OTC masaları. Bu, proje önerisindeki "geçen ay gönderdiyse bu hafta da gönderir" kural tabanlı baseline'ın güçlü olacağını doğruluyor. Model değerlendirmesinde bu grup ayrıca raporlanmalı.
 
 **Not.** 13 Mart haftasında toplam gönderici sayısı diğer haftaların ~5 katı (11.443). Büyük göndericilerde benzer bir sıçrama yok. Tarih, Mart 2023'teki bankacılık krizi ve USDC'nin geçici olarak dolar paritesini kaybetmesiyle örtüşüyor; ayrıntılı inceleme tam veriyle yapılabilir.
+
+## Gün 6: Kararlar
+
+| Soru | Sonuç | Karar |
+|---|---|---|
+| Maliyet kotaya sığıyor mu? | 497 GB / 1 TB | ✅ Devam |
+| Yatırma adresi tespiti çalışıyor mu? | Hacmin %77'si, elle kontrol 6/6 | ✅ Yöntem kullanılacak; tam veride "ilk LINK girişi" koşulu eklenecek |
+| Yeterli pozitif örnek var mı? | Kaba üst sınır %1,4–7,3 | ✅ 7 günlük ufuk korunuyor |
+
+1. **Kapsam:** Proje LINK ile, mevcut yöntemle devam ediyor.
+2. **Hedef değişken:** Bakiyenin ≥%20'si **ve** ≥100.000 $ değerinde CEX transferi. Kesin eşikler bakiyeler hesaplandıktan sonra keşifsel analizle gözden geçirilecek.
+3. **2. hafta çekimi onaylandı:** `01_opening_balances.sql` (202 GB) ve `02_token_transfers.sql` tüm dönem (181 GB), toplam 383 GB.
