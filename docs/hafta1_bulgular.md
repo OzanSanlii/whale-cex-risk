@@ -60,3 +60,22 @@ Sonuç: **7.174 yatırma adresi** (6.834'ü `exchange` kategorisinde). Binance 2
 
 - **Yanlış pozitif:** LINK'i aldıktan sonra 24 saat içinde tamamını tek bir borsaya gönderen bir balina da yatırma adresi gibi görünebilir. Tam veriyle şu ek koşullar eklenebilir: adresin ilk LINK girişi kuralın penceresinde olmalı (Dune'daki "ilk token alımı" koşulu) ve transfer sonrası bakiye ~0 olmalı.
 - **Ay sınırı etkisi:** Tek aylık örnekte, Şubat'ta fonlanıp Mart'ta borsaya aktaran adresler kuralı geçemiyor. Tam veride bu sorun ortadan kalkacak.
+
+### 4.4 Elle doğrulama (Arkham Intelligence)
+
+Kuralın bulduğu 5 rastgele aday (≥100 LINK) ve en büyük aday Arkham'da kontrol edildi:
+
+| # | Adres | Kuralın bulduğu borsa | Arkham etiketi | Sonuç |
+|---|---|---|---|---|
+| 1 | `0x99f2e9cf…685e` | Bullish | Bullish.com Deposit | ✅ |
+| 2 | `0xa3e9427b…9ad4` | Kraken | Kraken Deposit | ✅ |
+| 3 | `0x1503dd3a…3d76` | MEXC | MEXC Deposit | ✅ |
+| 4 | `0xcfd6e7a5…3caa` | Coinbase | Coinbase Deposit | ✅ |
+| 5 | `0xccdd6a84…377f` | Binance | Binance Deposit | ✅ |
+| 6 | `0x9b1c1752…cde9` (en büyük, 6,1 M LINK) | Binance | Binance Deposit | ✅ |
+
+**6/6 doğru.** En büyük adayın da yatırma adresi çıkması, en çok korkulan yanlış pozitif türünün (balinanın yatırma adresi sanılması) bu örnekte görülmediğini gösteriyor.
+
+1 numaralı adreste para bir kullanıcıdan değil, Bullish'in kendi sıcak cüzdanından gelmiş (borsa içi hareket). Kaynak adres CEX listesinde olduğu için kullanıcı akışı hesabına doğru biçimde dahil edilmedi.
+
+**Sınırlamalar:** Örneklem küçük (6 adres) ve Arkham'ın etiketleri de kendi sezgisel yöntemlerine dayanıyor; kesin doğruluk değil, tutarlılık gösteriyor. Ayrıca bu test yalnızca kuralın bulduklarının doğruluğunu (precision) ölçüyor; kuralın kaçırdığı yatırma adresleri (recall) ölçülmedi.
