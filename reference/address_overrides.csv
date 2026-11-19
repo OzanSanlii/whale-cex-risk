@@ -3,3 +3,5 @@ address,category,name,source
 0x3feb1e09b4bb0e7f0387cee092a52e85797ab889,protocol,Chainlink: Staking (v0.1),etherscan.io 2026-11-19
 0x5e8c8a7243651db1384c0ddfdbe39761e8e7e51a,protocol,Aave: Ethereum LINK V3,etherscan.io 2026-11-19
 0xd50f074ec5c7997ce1daacb513ec194c480878af,chainlink_related,Gnosis Safe; Chainlink rezervinden 18.7 M LINK almış (Arkham ile doğrulanacak),etherscan.io + transfer analizi 2026-11-19
+0x0757e27ac1631beeb37eed3270cc6301dd3d57d4,exchange,Upbit: Cold Wallet,Arkham (kullanıcı kontrolü) 2026-11-19
+0x7182bdeacab178a1c5a14502d532f8b2b7cf4285,exchange,Coinbase: Cold Wallet,Arkham (kullanıcı kontrolü + arkm.com) 2026-11-19
