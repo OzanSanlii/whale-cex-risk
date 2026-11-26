@@ -134,3 +134,25 @@ Bu, dönemin en büyük tekil "balina → borsa" akışı. `0xd50f…` Safe'i re
 Sonraki tüm adımlar genişletilmiş listeyi (`data/processed/cex_labels_extended.csv`, `config.CEX_LABELS`) kullanır.
 
 **Sınırlama.** Dönem içinde hiç transferi olmayan adresler bu yöntemle sınıflandırılamaz. Ortalama bakiyeye göre ilk 1.000 balinanın **155'i** 2023–2024'te hiç transfer yapmamış. Bunlar hedef değişkeni bozmaz (hiç borsaya göndermedikleri için her hafta 0), ama bir kısmı borsa soğuk cüzdanı olabilir ve evrende yer kaplar. "Coinbase Prime" soğuk cüzdanlarının bir kısmı da kurumsal müşterilerin saklama hesapları olabilir; bunlar da evren dışında tutuldu.
+
+### Elle doğrulama (Arkham, 2026-11-26)
+
+| # | Adres | Yöntemin tahmini | Arkham | Sonuç |
+|---|---|---|---|---|
+| 1 | `0xddd3ef4d…366b` | Coinbase soğuk | Coinbase | ✅ |
+| 2 | `0x2be835ca…09e6` | Coinbase soğuk | Coinbase | ✅ |
+| 3 | `0x17a086db…ad0d` | Coinbase Prime soğuk | Coinbase Prime | ✅ |
+| 4 | `0x07a2e3fa…0846` | Bitcoin Suisse soğuk | Bitcoin Suisse | ✅ |
+| 5 | `0xa948d00c…2498` | Borsası bilinmeyen sıcak cüzdan | Borsa değil; ilk fon Arbitrum One | ❌ |
+| 6 | `0x016606ac…49ee` | Borsası bilinmeyen sıcak cüzdan | Borsa değil; ilk fon Arbitrum One | ❌ |
+| 7–9 | `0x6d1f…`, `0xb4e9…`, `0x8d41…` | Hareketsiz balina (2,70 M LINK) | Coinbase soğuk cüzdanı | — |
+
+**Düzeltmeler:**
+
+- **Borsası belirlenemeyen toplama noktaları borsa sayılmıyor.** 23 adres `unknown_sink` kategorisine alındı. Bunlara giden 5.599 yatırma adresi benzeri adresin aktarımı (3,2 M LINK) artık satış olarak sayılmıyor; adresler balina evreninden de çıkarıldı.
+- **Soğuk cüzdan kuralı genişletildi.** Dönemde hiç LINK almamış adreslerde yalnızca çıkış koşulu aranıyor: gönderdiğinin ≥%90'ı doğrudan tek bir borsanın iç cüzdanlarına gitmişse soğuk cüzdan. Bu, 2 yıl hareketsiz kalıp tek seferde Coinbase'e 3,67 M LINK gönderen soğuk cüzdan tipini kapsıyor. Soğuk cüzdan sayısı 380'den 390'a çıktı.
+- 7–9 numaralı adresler `reference/address_overrides.csv` dosyasına Coinbase soğuk cüzdanı olarak eklendi.
+
+**Doğruluk özeti:** Borsası belirlenen çıkarımlar 4/4 doğru; borsası belirlenemeyenler 0/2. İkinci grup artık borsa sayılmıyor.
+
+**Hareketsiz balinalar.** En büyük hareketsiz adreslerin Coinbase kasası çıkması, ilk 1.000'deki 155 hareketsiz adresin önemli bir kısmının borsa soğuk cüzdanı olabileceğini gösteriyor. Bu adresler dönem içinde hiç hareket etmediği için hedef değişkene her hafta 0 olarak girer ve sahte pozitif üretmez. Hareket ettikleri anda ise genişletilen soğuk cüzdan kuralı onları yakalar. Bu yüzden evrende bırakıldılar; sınırlama raporda belirtilecek.

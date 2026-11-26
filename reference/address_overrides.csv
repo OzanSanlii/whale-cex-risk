@@ -5,3 +5,8 @@ address,category,name,source
 0xd50f074ec5c7997ce1daacb513ec194c480878af,chainlink_related,Gnosis Safe; Chainlink rezervinden 18.7 M LINK almış (Arkham ile doğrulanacak),etherscan.io + transfer analizi 2026-11-19
 0x0757e27ac1631beeb37eed3270cc6301dd3d57d4,exchange,Upbit: Cold Wallet,Arkham (kullanıcı kontrolü) 2026-11-19
 0x7182bdeacab178a1c5a14502d532f8b2b7cf4285,exchange,Coinbase: Cold Wallet,Arkham (kullanıcı kontrolü + arkm.com) 2026-11-19
+0x6d1fe7f4c921385f62745ed8f61ae57156990c90,exchange,Coinbase: Cold Wallet,Arkham (kullanıcı kontrolü) 2026-11-26
+0xb4e9275827b5f049196f5337f69533937475a3de,exchange,Coinbase: Cold Wallet,Arkham (kullanıcı kontrolü) 2026-11-26
+0x8d4169ccf3ad88eafbb09580e7441d3ed2b4b922,exchange,Coinbase: Cold Wallet,Arkham (kullanıcı kontrolü) 2026-11-26
+0xa948d00c74e637a65d676b0be576d1d71e8b2498,unknown_sink,Borsa değil; ilk fon Arbitrum One,Arkham (kullanıcı kontrolü) 2026-11-26
+0x016606acc6b0cfe537acc221e3bf1bb44b4049ee,unknown_sink,Borsa değil; ilk fon Arbitrum One,Arkham (kullanıcı kontrolü) 2026-11-26

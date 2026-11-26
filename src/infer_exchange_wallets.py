@@ -11,8 +11,10 @@ Yöntem (iki adım):
      24 saat içinde tamamen tek bir adrese aktaran) beslediği toplama noktaları bulunur.
      Kontrat olanlar (staking, DEX, köprü, borç verme) çıkarılır; kalan normal cüzdanlar
      sıcak cüzdan sayılır. Borsası, LINK gönderdiği bilinen borsa cüzdanlarından çıkarılır.
+     Borsası belirlenemeyenler "unknown_sink" olur (borsa sayılmaz).
   2. Soğuk cüzdan: Balina adaylarından, LINK girişinin ve çıkışının ≥%90'ı (hacimce)
-     doğrudan aynı borsanın cüzdanlarıyla olan normal cüzdanlar. Gerçek bir balina borsaya
+     doğrudan aynı borsanın cüzdanlarıyla olan normal cüzdanlar. Dönemde hiç LINK
+     almamışsa yalnızca çıkış koşulu aranır. Gerçek bir balina borsaya
      yatırma adresi üzerinden gönderir; borsanın iç cüzdanına doğrudan göndermez.
 
 Dönem içinde hiç transferi olmayan (hareketsiz) adresler bu yöntemle sınıflandırılamaz;
@@ -49,12 +51,12 @@ def main() -> None:
         FROM '{TRANSFERS}' WHERE from_address <> '{ZERO}'
     """)
     con.execute(f"""
-        CREATE TABLE known AS                    -- bilinen borsa cüzdanları
+        CREATE TABLE known AS                    -- bilinen borsa cüzdanları ve elle doğrulananlar
         SELECT address, exchange, label, source, category
         FROM read_csv_auto('{RAW_DIR / 'cex_labels.csv'}')
         UNION ALL
         SELECT address, split_part(name, ':', 1), name, 'manual', category
-        FROM read_csv_auto('{OVERRIDES}') WHERE category = 'exchange'
+        FROM read_csv_auto('{OVERRIDES}') WHERE category IN ('exchange', 'unknown_sink')
     """)
     con.execute(f"CREATE TABLE contracts AS SELECT address FROM '{CONTRACTS}'")
 
@@ -88,7 +90,10 @@ def main() -> None:
             GROUP BY ALL
         )
         SELECT h.address,
-               COALESCE(arg_max(d.exchange, d.vol), 'Unknown CEX') AS exchange
+               COALESCE(arg_max(d.exchange, d.vol), 'Unknown') AS exchange,
+               -- Borsası belirlenemeyenler borsa sayılmaz: Arkham kontrolünde bu gruptan iki
+               -- adresin köprü/zincirler arası aracı olduğu görüldü (ilk fon: Arbitrum One).
+               CASE WHEN arg_max(d.exchange, d.vol) IS NULL THEN 'unknown_sink' ELSE 'exchange' END AS category
         FROM h LEFT JOIN dest d USING (address)
         GROUP BY h.address
     """)
@@ -97,7 +102,7 @@ def main() -> None:
     con.execute(f"""
         CREATE TABLE ex_wallets AS
         SELECT address, exchange FROM known WHERE category = 'exchange'
-        UNION ALL SELECT address, exchange FROM hot
+        UNION ALL SELECT address, exchange FROM hot WHERE category = 'exchange'
     """)
     con.execute(f"""
         CREATE TABLE cold AS
@@ -124,22 +129,24 @@ def main() -> None:
         )
         SELECT p.address, p.exchange
         FROM per_ex p JOIN totals tt USING (address)
-        WHERE tt.in_all > 0 AND tt.out_all > 0
-          AND p.in_ex  >= {COLD_SHARE} * tt.in_all
+        WHERE tt.out_all > 0
           AND p.out_ex >= {COLD_SHARE} * tt.out_all
+          -- Dönemde hiç LINK almamış adreslerde yalnızca çıkış koşulu aranır
+          -- (ör. Coinbase soğuk cüzdanı: 2 yıl hareketsiz, sonra tek seferde Coinbase'e).
+          AND (COALESCE(tt.in_all, 0) = 0 OR COALESCE(p.in_ex, 0) >= {COLD_SHARE} * tt.in_all)
     """)
 
     con.sql(f"""
         SELECT address, exchange, label, source, category FROM known
         UNION ALL
-        SELECT address, exchange, exchange || ' (çıkarım: sıcak cüzdan)', 'inferred_hot', 'exchange' FROM hot
+        SELECT address, exchange, exchange || ' (çıkarım: sıcak cüzdan)', 'inferred_hot', category FROM hot
         UNION ALL
         SELECT address, exchange, exchange || ' (çıkarım: soğuk cüzdan)', 'inferred_cold', 'exchange' FROM cold
         ORDER BY category, exchange, address
     """).write_csv(str(OUT))
 
     print("Çıkarılan sıcak cüzdanlar:")
-    print(con.sql("SELECT exchange, COUNT(*) AS adres FROM hot GROUP BY 1 ORDER BY 2 DESC"))
+    print(con.sql("SELECT category, exchange, COUNT(*) AS adres FROM hot GROUP BY ALL ORDER BY 3 DESC"))
     print("Çıkarılan soğuk cüzdanlar:")
     print(con.sql("SELECT exchange, COUNT(*) AS adres FROM cold GROUP BY 1 ORDER BY 2 DESC"))
     total = con.sql(f"SELECT COUNT(*) FROM read_csv_auto('{OUT}')").fetchone()[0]
