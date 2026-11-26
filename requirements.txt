@@ -5,3 +5,4 @@ google-cloud-bigquery==3.46.2
 db-dtypes==1.8.0
 scikit-learn==1.9.1
 requests==2.34.2
+shap==0.51.0

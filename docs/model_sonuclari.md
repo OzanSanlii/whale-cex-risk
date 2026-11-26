@@ -57,8 +57,6 @@ Kalibre edilmiş Random Forest'ın olasılıkları gerçekleşen oranlara yakın
 
 ## Sınırlamalar ve sonraki adımlar
 
-- Sonuçların istatistiksel güvenilirliği için haftalara göre bootstrap güven aralıkları eklenecek.
-- SHAP ile genel ve cüzdan bazında açıklama (planın 9. haftası).
 - Proxy kontratlar (`is_proxy`) ve fon/OTC hesapları için ayrı performans raporu.
 - Chainlink rezervinin Binance transferleri, fiyat etkisi analizinde ayrı vaka olarak incelenecek.
 
