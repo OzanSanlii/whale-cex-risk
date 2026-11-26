@@ -1,15 +1,18 @@
-"""Günlük LINK/USDT fiyat ve hacim verisini Binance'in herkese açık piyasa verisi API'sinden çeker.
+"""Günlük fiyat ve hacim verisini (varsayılan LINK/USDT; fiyat etkisi analizi için ETH/USDT) Binance'in herkese açık piyasa verisi API'sinden çeker.
 
 Kaynak: https://data-api.binance.vision/api/v3/klines (anahtar gerektirmez, coğrafi kısıtlama yok).
 CoinGecko'nun ücretsiz API'si yalnızca son 365 günü verdiği için 2022–2024 için kullanılamadı.
 
 USDT, dolar karşılığı olarak kabul edilir (dönem boyunca 1 $ civarında işlem gördü).
 
-Çıktı:  data/raw/link_price_daily.parquet
+Çıktı:  data/raw/<varlık>_price_daily.parquet  (ör. link_price_daily.parquet)
         date, open, high, low, close, volume_link, volume_usd
+        (volume_link sütunu, ETH için ETH cinsinden hacimdir)
 
-Çalıştırma:  python src/fetch_prices.py
+Çalıştırma:  python src/fetch_prices.py            # LINK
+             python src/fetch_prices.py ETHUSDT    # ETH
 """
+import sys
 from datetime import datetime, timezone
 
 import pandas as pd
@@ -18,20 +21,19 @@ import requests
 from config import RAW_DIR
 
 URL = "https://data-api.binance.vision/api/v3/klines"
-SYMBOL = "LINKUSDT"
 START = "2022-09-01"  # özelliklerin 30 günlük geriye bakışı için analiz döneminden önce
 END = "2025-01-15"    # son haftanın etiketi için dönem sonrasından birkaç gün
-OUT = RAW_DIR / "link_price_daily.parquet"
 
 
 def ms(day: str) -> int:
     return int(datetime.fromisoformat(day).replace(tzinfo=timezone.utc).timestamp() * 1000)
 
 
-def main() -> None:
+def main(symbol: str = "LINKUSDT") -> None:
+    out = RAW_DIR / f"{symbol.removesuffix('USDT').lower()}_price_daily.parquet"
     rows, start = [], ms(START)
     while start < ms(END):
-        r = requests.get(URL, params={"symbol": SYMBOL, "interval": "1d", "startTime": start,
+        r = requests.get(URL, params={"symbol": symbol, "interval": "1d", "startTime": start,
                                       "endTime": ms(END), "limit": 1000}, timeout=30)
         r.raise_for_status()
         batch = r.json()
@@ -49,9 +51,9 @@ def main() -> None:
 
     expected = pd.date_range(START, END, inclusive="left").date
     missing = sorted(set(expected) - set(df.date))
-    df.to_parquet(OUT, index=False)
-    print(f"{len(df)} gün ({df.date.min()} – {df.date.max()}), eksik gün: {len(missing)} -> {OUT.name}")
+    df.to_parquet(out, index=False)
+    print(f"{symbol}: {len(df)} gün ({df.date.min()} – {df.date.max()}), eksik gün: {len(missing)} -> {out.name}")
 
 
 if __name__ == "__main__":
-    main()
+    main(*sys.argv[1:])
