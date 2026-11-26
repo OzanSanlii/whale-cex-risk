@@ -14,3 +14,7 @@ STABLECOINS = {
     "USDT": "0xdac17f958d2ee523a2206206994597c13d831ec7",
     "USDC": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
 }
+
+# Borsa etiketleri: açık kaynak liste + elle doğrulananlar + davranıştan çıkarılan iç cüzdanlar
+# (src/infer_exchange_wallets.py). Ham liste: RAW_DIR / "cex_labels.csv"
+CEX_LABELS = PROCESSED_DIR / "cex_labels_extended.csv"

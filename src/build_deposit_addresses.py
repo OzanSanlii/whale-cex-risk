@@ -11,7 +11,7 @@ yatırma adresi sayılır, eğer:
 tutmaya devam eden bir balinanın yatırma adresi sanılmasını önler.
 
 Girdi:  data/raw/link_transfers_2022_10_2024_12.parquet, link_opening_balances_2022.parquet,
-        cex_labels.csv
+        cex_labels_extended.csv (src/infer_exchange_wallets.py)
 Çıktı:  data/processed/deposit_addresses.parquet
 
 Çalıştırma:  python src/build_deposit_addresses.py
@@ -20,7 +20,7 @@ import time
 
 import duckdb
 
-from config import PROCESSED_DIR, RAW_DIR
+from config import CEX_LABELS, PROCESSED_DIR, RAW_DIR
 
 TRANSFERS = RAW_DIR / "link_transfers_2022_10_2024_12.parquet"
 OPENING = RAW_DIR / "link_opening_balances_2022.parquet"
@@ -41,7 +41,7 @@ def main() -> None:
         FROM '{TRANSFERS}'
         WHERE from_address <> '{ZERO}' AND to_address <> '{ZERO}'
     """)
-    con.execute(f"CREATE TABLE cex AS SELECT * FROM read_csv_auto('{RAW_DIR / 'cex_labels.csv'}')")
+    con.execute(f"CREATE TABLE cex AS SELECT * FROM read_csv_auto('{CEX_LABELS}')")
 
     con.execute(f"""
         CREATE TABLE deposit AS

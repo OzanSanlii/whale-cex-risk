@@ -6,7 +6,7 @@ Her balina adayına (weekly_balances.parquet'teki adresler) tek bir kategori ata
   Kategori            Kaynak                                   Balina evreninde
   ------------------  ---------------------------------------  ----------------
   manuel              reference/address_overrides.csv           kategoriye göre
-  cex / lender / ...  data/raw/cex_labels.csv                   hayır
+  cex / lender / ...  cex_labels_extended.csv                   hayır
   deposit             data/processed/deposit_addresses.parquet  hayır
   chainlink_reserve   Etherscan "Chainlink: Noncirculating ..."  karar bekliyor
   chainlink_related   manuel: rezervden fon alan cüzdanlar      karar bekliyor
@@ -24,7 +24,7 @@ import json
 import duckdb
 import pandas as pd
 
-from config import PROCESSED_DIR, RAW_DIR, ROOT
+from config import CEX_LABELS, PROCESSED_DIR, RAW_DIR, ROOT
 
 OVERRIDES = ROOT / "reference" / "address_overrides.csv"
 OUT = PROCESSED_DIR / "address_registry.parquet"
@@ -61,7 +61,7 @@ def main() -> None:
         for a, v in json.loads((RAW_DIR / "etherscan_labels_2023.json").read_text(encoding="utf-8")).items()
     }
     overrides = pd.read_csv(OVERRIDES).set_index("address")
-    cex = pd.read_csv(RAW_DIR / "cex_labels.csv").set_index("address")
+    cex = pd.read_csv(CEX_LABELS).set_index("address")
     deposit = con.sql(
         f"SELECT address, exchange FROM '{PROCESSED_DIR / 'deposit_addresses.parquet'}'"
     ).df().set_index("address")

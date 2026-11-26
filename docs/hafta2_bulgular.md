@@ -104,3 +104,33 @@ Chainlink'in "Noncirculating Supply" cüzdanlarındaki LINK dönem boyunca **491
 | Etiketsiz Gnosis Safe `0xd50f…` | 16 | 18,7 |
 
 Bu, dönemin en büyük tekil "balina → borsa" akışı. `0xd50f…` Safe'i rezervden fonlandığı için `chainlink_related` olarak işaretlendi (Arkham ile doğrulanacak).
+
+### Karar: Chainlink rezervi (seçenek B)
+
+`chainlink_reserve` ve `chainlink_related` adresler balina evreninden çıkarıldı. Rezervden Binance'e giden 54 transfer (111,4 M LINK), 9. haftadaki fiyat etkisi analizinde ayrı bir vaka olarak incelenecek. Gerekçe: transferler düzenli ve tahmin edilebilir; modele dahil edilseler başarıyı yapay olarak şişirirdi.
+
+## Adım 4: Eksik borsa cüzdanlarının tespiti
+
+**Sorun.** Arkham kontrolünde en büyük iki etiketsiz "balina"nın **Upbit** (`0x0757…`) ve **Coinbase** (`0x7182…`) soğuk cüzdanı olduğu görüldü. Açık etiket listeleri borsaların iç cüzdanlarında eksik ve bu iki tür hata üretiyor:
+
+- **Sahte pozitif:** Coinbase soğuk cüzdanı iki yıl hareketsiz kaldıktan sonra 3,67 M LINK'i Coinbase'e gönderdi. Bu, "balina borsaya gönderdi" olarak etiketlenecekti.
+- **Kaçan satış:** Upbit soğuk cüzdanını besleyen 17 sıcak cüzdanın hiçbiri listede değildi. Bu yüzden Upbit kullanıcılarının yatırma adresleri hiç bulunamamıştı.
+
+**Yöntem** ([src/flag_contracts.py](../src/flag_contracts.py), [src/infer_exchange_wallets.py](../src/infer_exchange_wallets.py)):
+
+1. **Toplama noktaları:** En az 50 "yatırma adresi gibi davranan" adresin LINK aktardığı adresler bulundu (217 adres; 109'u zaten listedeydi, 108'i yeni).
+2. **Kontrat ayrımı:** `crypto_ethereum.contracts` tablosuyla (faturalanan 4,51 GB) kontrol edildi. Yeni 108 noktanın 56'sı kontrat (staking, Aave, DEX, köprü) olduğu için elendi. Bilinen 7 adresin 7'si doğru sınıflandı.
+3. **Sıcak cüzdan:** Kalan 52 normal cüzdan borsa sıcak cüzdanı kabul edildi. Borsası, LINK gönderdiği bilinen borsa cüzdanlarından çıkarıldı. Upbit'i besleyen 17 sıcak cüzdanın 15'i yakalandı.
+4. **Soğuk cüzdan:** LINK giriş ve çıkışının ≥%90'ı (hacimce) doğrudan tek bir borsanın cüzdanlarıyla olan normal cüzdanlar. Gerekçe: gerçek bir balina borsaya yatırma adresi üzerinden gönderir, borsanın iç cüzdanına doğrudan göndermez. 380 soğuk cüzdan bulundu (Coinbase 200, Coinbase Prime 115, Bitcoin Suisse 27, OKX 11).
+
+**Etki:**
+
+| | Önce | Sonra |
+|---|---:|---:|
+| Borsa etiket listesi | 5.097 | 5.528 |
+| Yatırma adresi | 235.761 | 246.124 (+2.312 Upbit) |
+| Balina evreni (whale kategorisi) | 19.436 | 18.965 |
+
+Sonraki tüm adımlar genişletilmiş listeyi (`data/processed/cex_labels_extended.csv`, `config.CEX_LABELS`) kullanır.
+
+**Sınırlama.** Dönem içinde hiç transferi olmayan adresler bu yöntemle sınıflandırılamaz. Ortalama bakiyeye göre ilk 1.000 balinanın **155'i** 2023–2024'te hiç transfer yapmamış. Bunlar hedef değişkeni bozmaz (hiç borsaya göndermedikleri için her hafta 0), ama bir kısmı borsa soğuk cüzdanı olabilir ve evrende yer kaplar. "Coinbase Prime" soğuk cüzdanlarının bir kısmı da kurumsal müşterilerin saklama hesapları olabilir; bunlar da evren dışında tutuldu.
