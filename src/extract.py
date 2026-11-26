@@ -36,6 +36,9 @@ def build_params(args, sql: str) -> list:
         wallets = [r[0] for r in duckdb.sql(
             f"SELECT DISTINCT address FROM '{PROCESSED_DIR / 'labels.parquet'}' ORDER BY 1").fetchall()]
         print(f"Cüzdan listesi: {len(wallets):,} adres (labels.parquet)")
+        # Hangi adreslerin sorgulandığı sonradan bilinebilsin (0 ile eksik veriyi ayırmak için)
+        duckdb.sql(f"SELECT UNNEST({wallets!r}) AS address").write_parquet(
+            str(RAW_DIR / f"{args.output_name}_wallets.parquet"))
         params.append(bigquery.ArrayQueryParameter("wallets", "STRING", wallets))
     for name in ("start", "end", "cutoff"):
         value = getattr(args, name)
