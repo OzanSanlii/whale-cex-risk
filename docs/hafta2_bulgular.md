@@ -195,3 +195,26 @@ Oran eşiklere duyarlı değil. Evrendeki en küçük balina bile ~30 bin LINK t
 
 - Pozitifi olan 949 farklı adres var. **704'ü yalnızca bir kez** pozitif olmuş; 43 adres 5 veya daha fazla kez pozitif ve toplam pozitiflerin %27'sini (445) oluşturuyor.
 - **Kalıcılık:** Önceki 4 haftada pozitif olan bir adresin bu hafta pozitif olma oranı **%30,4**; diğerlerinde %1,1 (yaklaşık 28 kat). Kural tabanlı baseline bu yüzden güçlü olacak. Ancak bu kural pozitiflerin yalnızca ~%33'ünü yakalayabiliyor; kalan ~%67'si "beklenmedik" olaylar. Modelin değeri asıl bu grupta ölçülecek.
+
+## Adım 7: Stablecoin girişleri ve kontrat ayrımı
+
+**Stablecoin çekimi** (`03_stablecoin_inflows.sql`, faturalanan 113,12 GB): balina evrenine en az bir kez giren 3.746 adrese Aralık 2022 – Aralık 2024'te gelen 1.558.155 USDT/USDC transferi (USDT 169 milyar $, USDC 406 milyar $). Medyan balina dönem boyunca 13 transfer almış.
+
+**Sorun.** Bazı "balinalar" aşırı uçtaydı (ör. `0x51c7…`: 640 bin transferle 98 milyar $). Kontrol edildiğinde evrende 615 etiketsiz kontrat olduğu ve bunların balina-haftaların %18'ini ama pozitiflerin %30'unu oluşturduğu görüldü. `0x51c7…` bilinen bir MEV/arbitraj botu: evrende bulunduğu 11 haftanın 11'inde borsaya göndermiş.
+
+**Yöntem** (`sql/05_contract_sighashes.sql`, faturalanan 6,41 GB): kontratların fonksiyon imzaları çekildi.
+
+| Grup | Adres | Pozitif oranı | Karar |
+|---|---:|---:|---|
+| Kodlu kontrat (fonksiyon imzası var) | 74 | %1,25 | Evrenden çıkarıldı (`contract_other`) |
+| Proxy (imza listesi boş) | 541 | %2,88 | Evrende, işaretli (`whale_proxy`) |
+| Normal cüzdan (EOA) | 3.131 | %1,35 | Evrende |
+
+Bilinen Gnosis Safe `0xd50f…` proxy grubunda, bilinen MEV botu kodlu kontrat grubunda çıktı. En çok stablecoin alan 10 adresten kontrat olan 6'sının hepsi kodlu kontrat grubunda.
+
+**Sınırlamalar:**
+
+- Proxy grubu yalnızca Safe'lerden oluşmuyor; başka proxy türleri de içerebilir (ör. borsa yönlendiricileri). Kesin ayrım kontrat kodunu (bytecode) gerektiriyor; bu sorgu ~87 GB tarıyor ve şimdilik yapılmadı. Proxy olma durumu modele özellik olarak verilecek ve sonuçlar bu grup için ayrıca raporlanacak.
+- Kodlu kontratlar çıkınca evrene 78 yeni adres girdi (310 balina-hafta, %0,3). Stablecoin çekimi eski listeyle yapıldığı için bu satırlarda stablecoin özelliği eksik olarak işaretlenecek.
+
+**Güncel hedef değişken:** 104.000 balina-hafta, **1.630 pozitif (%1,57)**.

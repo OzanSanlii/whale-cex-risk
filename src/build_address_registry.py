@@ -13,7 +13,14 @@ Her balina adayına (weekly_balances.parquet'teki adresler) tek bir kategori ata
   protocol            Etherscan DeFi / köprü / oracle etiketleri hayır
   bot                 Etherscan "mev-bot"                        hayır
   fund / otc          Etherscan "fund", "otc"                    evet (işaretli)
-  whale               etiketsiz veya diğer                       evet
+  contract_other      etiketsiz, kendi kodu olan kontrat         hayır
+  whale_proxy         etiketsiz proxy kontrat (Gnosis Safe vb.)  evet (işaretli)
+  whale               etiketsiz normal cüzdan veya diğer         evet
+
+Kontrat ayrımı (data/raw/contract_sighashes.parquet, sql/05_contract_sighashes.sql):
+fonksiyon imzası olan kontratlar MEV/arbitraj botu ve protokol kontratlarıdır (ör.
+0x51c7…: evrende bulunduğu 11 haftanın 11'inde borsaya göndermiş). İmzası boş olanlar
+kodu başka kontrata devreden proxy'lerdir; Gnosis Safe çoklu imza cüzdanları bu gruptadır.
 
 Çıktı:  data/processed/address_registry.parquet
 
@@ -62,6 +69,10 @@ def main() -> None:
     }
     overrides = pd.read_csv(OVERRIDES).set_index("address")
     cex = pd.read_csv(CEX_LABELS).set_index("address")
+    sighashes = con.sql(
+        f"SELECT address, len(ANY_VALUE(function_sighashes)) AS n_sig "
+        f"FROM '{RAW_DIR / 'contract_sighashes.parquet'}' GROUP BY address"
+    ).df().set_index("address").n_sig
     deposit = con.sql(
         f"SELECT address, exchange FROM '{PROCESSED_DIR / 'deposit_addresses.parquet'}'"
     ).df().set_index("address")
@@ -79,11 +90,14 @@ def main() -> None:
             rows.append((address, "deposit", f"{deposit.loc[address, 'exchange']} deposit", "deposit_rule"))
         elif cat := etherscan_category(name, labels):
             rows.append((address, cat, name, "etherscan_2023"))
+        elif address in sighashes.index:
+            cat = "contract_other" if sighashes[address] > 0 else "whale_proxy"
+            rows.append((address, cat, name, "contract_sighashes"))
         else:
             rows.append((address, "whale", name, "etherscan_2023" if name else "-"))
 
     registry = pd.DataFrame(rows, columns=["address", "category", "name", "source"])
-    registry["in_universe"] = registry.category.isin(["whale", "fund", "otc"])
+    registry["in_universe"] = registry.category.isin(["whale", "whale_proxy", "fund", "otc"])
     registry.to_parquet(OUT, index=False)
 
     summary = registry.groupby(["category", "in_universe"]).size().rename("adres").reset_index()
