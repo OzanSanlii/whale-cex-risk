@@ -156,3 +156,42 @@ Sonraki tüm adımlar genişletilmiş listeyi (`data/processed/cex_labels_extend
 **Doğruluk özeti:** Borsası belirlenen çıkarımlar 4/4 doğru; borsası belirlenemeyenler 0/2. İkinci grup artık borsa sayılmıyor.
 
 **Hareketsiz balinalar.** En büyük hareketsiz adreslerin Coinbase kasası çıkması, ilk 1.000'deki 155 hareketsiz adresin önemli bir kısmının borsa soğuk cüzdanı olabileceğini gösteriyor. Bu adresler dönem içinde hiç hareket etmediği için hedef değişkene her hafta 0 olarak girer ve sahte pozitif üretmez. Hareket ettikleri anda ise genişletilen soğuk cüzdan kuralı onları yakalar. Bu yüzden evrende bırakıldılar; sınırlama raporda belirtilecek.
+
+## Adım 5: Günlük LINK fiyatı
+
+Script: [src/fetch_prices.py](../src/fetch_prices.py) → `data/raw/link_price_daily.parquet`
+
+Kaynak Binance'in herkese açık piyasa verisi API'si (`data-api.binance.vision`, LINK/USDT günlük mum). CoinGecko'nun ücretsiz API'si yalnızca son 365 günü verdiği için kullanılamadı. 2022-09-01 – 2025-01-15 arası 868 günün tamamı mevcut, eksik gün yok.
+
+| | Değer |
+|---|---|
+| Fiyat aralığı (2023–2024) | 5,13 $ – 29,26 $ |
+| Medyan günlük hacim (Binance LINK/USDT) | 37,3 M $ |
+
+## Adım 6: Hedef değişken
+
+Script: [src/build_labels.py](../src/build_labels.py) → `data/processed/labels.parquet`
+
+**Tanım:** Her hafta başında balina evrenindeki en büyük 1.000 adres için, sonraki 7 gün içinde borsaya (doğrudan veya yatırma adresi üzerinden) gönderilen LINK, hafta başı bakiyesinin **≥%20'si** ve transfer günü fiyatıyla **≥100.000 $** ise label = 1. Son hafta (2024-12-30) etiket penceresi veri dışına taştığı için çıkarıldı.
+
+**Sonuç: 104.000 balina-hafta, 1.635 pozitif (%1,57).** Balina evrenine en az bir kez giren farklı adres sayısı: 3746.
+
+| Yıl | Pozitif | Oran | Haftalık min – max |
+|---|---:|---:|---|
+| 2023 | 777 | %1,49 | 1 – 38 |
+| 2024 | 858 | %1,65 | 3 – 48 |
+
+**Eşik duyarlılığı** (pozitif oran, %):
+
+| Bakiye payı | ≥50k $ | ≥100k $ | ≥250k $ |
+|---|---:|---:|---:|
+| ≥%10 | 1,81 | 1,72 | 1,51 |
+| ≥%20 | 1,60 | **1,57** | 1,43 |
+| ≥%30 | 1,43 | 1,42 | 1,34 |
+
+Oran eşiklere duyarlı değil. Evrendeki en küçük balina bile ~30 bin LINK tuttuğu için dolar koşulu nadiren bağlayıcı; asıl belirleyici bakiye payı. Önerideki **%20 ve 100 bin $** eşikleri korunuyor. 1. haftadaki kaba üst sınır tahmini (%1,4–7,3) alt ucunda gerçekleşti.
+
+**Pozitiflerin yapısı:**
+
+- Pozitifi olan 949 farklı adres var. **704'ü yalnızca bir kez** pozitif olmuş; 43 adres 5 veya daha fazla kez pozitif ve toplam pozitiflerin %27'sini (445) oluşturuyor.
+- **Kalıcılık:** Önceki 4 haftada pozitif olan bir adresin bu hafta pozitif olma oranı **%30,4**; diğerlerinde %1,1 (yaklaşık 28 kat). Kural tabanlı baseline bu yüzden güçlü olacak. Ancak bu kural pozitiflerin yalnızca ~%33'ünü yakalayabiliyor; kalan ~%67'si "beklenmedik" olaylar. Modelin değeri asıl bu grupta ölçülecek.
