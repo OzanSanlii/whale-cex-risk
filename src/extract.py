@@ -13,10 +13,11 @@ import argparse
 import time
 import warnings
 
+import duckdb
 import pyarrow.parquet as pq
 from google.cloud import bigquery
 
-from config import PROJECT_ID, RAW_DIR, ROOT, TOKENS
+from config import PROCESSED_DIR, PROJECT_ID, RAW_DIR, ROOT, STABLECOINS, TOKENS
 from dry_run import ts
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -24,8 +25,18 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 GB = 1024**3
 
 
-def build_params(args) -> list:
-    params = [bigquery.ArrayQueryParameter("tokens", "STRING", list(TOKENS.values()))]
+def build_params(args, sql: str) -> list:
+    """Yalnızca sorguda geçen parametreler gönderilir."""
+    params = []
+    if "@tokens" in sql:
+        params.append(bigquery.ArrayQueryParameter("tokens", "STRING", list(TOKENS.values())))
+    if "@stablecoins" in sql:
+        params.append(bigquery.ArrayQueryParameter("stablecoins", "STRING", list(STABLECOINS.values())))
+    if "@wallets" in sql:  # balina evrenine en az bir kez giren adresler
+        wallets = [r[0] for r in duckdb.sql(
+            f"SELECT DISTINCT address FROM '{PROCESSED_DIR / 'labels.parquet'}' ORDER BY 1").fetchall()]
+        print(f"Cüzdan listesi: {len(wallets):,} adres (labels.parquet)")
+        params.append(bigquery.ArrayQueryParameter("wallets", "STRING", wallets))
     for name in ("start", "end", "cutoff"):
         value = getattr(args, name)
         if value:
@@ -49,7 +60,7 @@ def main() -> None:
         raise SystemExit(f"{out.name} zaten var; tekrar çekmek kota harcar. Gerekirse --overwrite kullanın.")
 
     sql = (ROOT / "sql" / args.sql_file).read_text(encoding="utf-8")
-    params = build_params(args)
+    params = build_params(args, sql)
     client = bigquery.Client(project=PROJECT_ID)
 
     dry = client.query(sql, job_config=bigquery.QueryJobConfig(
